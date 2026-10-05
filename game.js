@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.js';
+import { illustratedMaterial, paletteMaterial } from './art-materials.js?v=6.2';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { createGame, step, attack, dodge, guard, setPaused, clearControls, upgrade, buy, equip, retry, canShop, RULES } from './combat.js?v=6.1';
 import { readMovement } from './input.js?v=6';
@@ -9,6 +10,13 @@ import { STORY } from './story.js?v=6';
 import { animateCharacter, bindPresentation, bindHammer, hammerContact, visualDelta, soundSpec } from './presentation.js?v=6.1';
 
 const $ = id => document.getElementById(id);
+// Only this named proposal is selectable; query values never become asset paths.
+const brasaProposal=new URLSearchParams(location.search).get('visual')!=='classic';
+const heroAsset=brasaProposal?'./assets/hero-brasa.glb':'./assets/hero.glb';
+const heroChoice=$('heroChoice'),heroSwitch=$('heroSwitch'),heroProposal=$('heroProposal');
+heroSwitch.href=brasaProposal?'?visual=classic':'./';
+heroSwitch.textContent=brasaProposal?'Comparar com visual anterior':'Ver novo visual';
+heroProposal.hidden=!brasaProposal;
 const ui = Object.fromEntries(['world','hp','hpText','stamina','chapter','progress','distance','enemyHud','enemyName','enemyHp','enemyTell','toast','desktopHelp','auto','forge','coins','upgrade','forgeHelp','mobileControls','joystick','stick','defend','attack','dodge','overlay','overlayTitle','overlayCopy','modeChoice','instructions','modeHelp','start','restart','loadStatus','pause','sound','pc','mobile'].map(id => [id,$(id)]));
 let renderer, scene, camera, heroModel, enemyModel, heroTemplate, enemyTemplate, game = createGame(), mode = matchMedia('(pointer:coarse)').matches ? 'mobile' : 'pc', loaded = false;
 try{const saved=parseSave(localStorage.getItem(SAVE_KEY));if(saved)game=createGame(saved);}catch{}
@@ -18,7 +26,7 @@ let toastTime = 0, shake = 0, guardFlash = 0, parryReaction = 0, killTime = 0, s
 const keys = new Set(), stickMove = { x: 0, z: 0 }, particles = [], coins = [], corpses = [];
 const vec = new THREE.Vector3(), targetCamera = new THREE.Vector3(), lookTarget = new THREE.Vector3();
 const colors = { stone: 0x53606b, light: 0xc7b58d, dark: 0x263440, red: 0xad344c, gold: 0xe7ad55 };
-const mat = (color, extra={}) => new THREE.MeshStandardMaterial({ color, roughness:.85, metalness:.15, ...extra });
+const mat = (color, extra={}) => paletteMaterial(color,extra,brasaProposal);
 const stoneMat = mat(colors.stone), darkMat = mat(colors.dark), paleMat = mat(colors.light), goldMat = mat(colors.gold,{metalness:.7,roughness:.3}), redMat = mat(colors.red);
 const box = new THREE.BoxGeometry(1,1,1), sphere = new THREE.SphereGeometry(1,10,8);
 function solid(geometry, material, x,y,z,sx=1,sy=1,sz=1, parent=scene) { const mesh = new THREE.Mesh(geometry,material); mesh.position.set(x,y,z); mesh.scale.set(sx,sy,sz); mesh.receiveShadow=true; mesh.castShadow=true; parent.add(mesh); return mesh; }
@@ -36,10 +44,10 @@ function initializeScene() {
   renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.25;
   scene=new THREE.Scene(); scene.background=new THREE.Color(0x182735); scene.fog=new THREE.FogExp2(0x233240,.025);
   camera=new THREE.PerspectiveCamera(49,innerWidth/innerHeight,.1,100); camera.position.set(0,5.3,-8);
-  scene.add(new THREE.HemisphereLight(0xd1e6ff,0x35313c,2.3));
+  scene.add(new THREE.HemisphereLight(0xd1e6ff,0x35313c,brasaProposal?.8:2.3));
   const sun=new THREE.DirectionalLight(0xffdcab,3.4); worldSun=sun; sun.position.set(-12,18,12); sun.castShadow=true;
   sun.shadow.mapSize.set(1024,1024); Object.assign(sun.shadow.camera,{left:-15,right:15,top:24,bottom:-12,near:.1,far:70}); sun.shadow.bias=-.0005; scene.add(sun); scene.add(sun.target); sun.target.position.set(0,0,20);
-  const fill=new THREE.DirectionalLight(0x87bcff,1.8); fill.position.set(6,4,-6); scene.add(fill);
+  const fill=new THREE.DirectionalLight(0x87bcff,brasaProposal?.35:1.8); fill.position.set(6,4,-6); scene.add(fill);
   solid(box,mat(0x283743),0,-.4,30,65,.6,90);
   solid(box,mat(0x66717b),0,-.08,55,8,.18,120);
   for(let z=-3;z<116;z+=2.5) {
@@ -74,7 +82,7 @@ function arch(z, final=false) {
 function prepareModel(source) {
   const model=source.clone(true);
   model.traverse(node=>{
-    if(node.isMesh) { node.material=node.material.clone();node.userData.ownedMaterial=true;node.castShadow=true;node.receiveShadow=true; }
+    if(node.isMesh) { node.material=brasaProposal?illustratedMaterial(node.material):node.material.clone();node.userData.ownedMaterial=true;node.castShadow=true;node.receiveShadow=true; }
   });
   bindPresentation(model);return model;
 }
@@ -152,13 +160,14 @@ function selectMode(selected) {
 }
 function resetInput() {keys.clear();stickMove.x=0;stickMove.z=0;joystickPointer=null;guardPointer=null;ui.stick.style.transform='';clearControls(game);}
 function showOverlay(state='paused') {
+  heroChoice.hidden=state!=='intro'&&state!=='paused';
   renderNeeded=true;
   shopUI.panel.hidden=true;
   resetInput();setPaused(game,true);ui.overlay.hidden=false;ui.modeChoice.hidden=false;ui.instructions.hidden=state!=='intro';ui.restart.hidden=state==='intro';
   ui.start.hidden=state==='dead'||state==='won';ui.start.textContent=state==='intro'?'ENTRAR NA JORNADA':'CONTINUAR';
   ui.overlayTitle.textContent=state==='dead'?'LEVANTE-SE':state==='won'?'TRAVESSIA':state==='paused'?'RESPIRA':'DIOSH';
   ui.overlayCopy.textContent=state==='dead'?STORY.retry:state==='won'?STORY.ending:state==='paused'?'A jornada está pausada. Troque os controles ou continue no seu ritmo.':STORY.intro;
-  ui.loadStatus.textContent=state==='won'?`${game.kills} / 9 duelos · ${game.coins} moedas`:`V6.1.1 · ${game.checkpoint.name} · compras salvas neste navegador`;
+  ui.loadStatus.textContent=state==='won'?`${game.kills} / 9 duelos · ${game.coins} moedas`:`V6.2 · ${game.checkpoint.name} · compras salvas neste navegador`;
   shopUI.resume.hidden=state!=='dead';shopUI.pauseShop.hidden=state!=='paused'||!canShop(game);
 }
 function begin() {
@@ -252,7 +261,7 @@ function frame(now) {
   const initialPose=!heroModel.userData.poseInitialized;
   if(visualDt>0||initialPose){
     animateModel(heroModel,game.hero,true,visualDt);if(enemyModel&&game.enemy)animateModel(enemyModel,game.enemy,false,visualDt);
-    const act=actAt(game.hero.z),sky=new THREE.Color(act===0?0x56778b:act===1?0x182331:0x2a233a);scene.background.lerp(sky,initialPose?1:Math.min(1,visualDt*.7));scene.fog.color.copy(scene.background);worldSun.position.set(-12,18,game.hero.z+12);worldSun.target.position.set(0,0,game.hero.z+5);worldSun.intensity=act===0?3.4:act===1?2.0:2.6;
+    const act=actAt(game.hero.z),sky=new THREE.Color(act===0?0x56778b:act===1?0x182331:0x2a233a);scene.background.lerp(sky,initialPose?1:Math.min(1,visualDt*.7));scene.fog.color.copy(scene.background);worldSun.position.set(-12,18,game.hero.z+12);worldSun.target.position.set(0,0,game.hero.z+5);worldSun.intensity=brasaProposal?(act===0?2.2:act===1?1.5:1.9):(act===0?3.4:act===1?2.0:2.6);
     const shield=heroModel.getObjectByName('Shield');if(shield)shield.traverse(node=>{if(node.isMesh){node.material.emissive.setHex(guardFlash>0?0x4e9fbe:game.hero.parry>0?0x43757c:0);node.material.emissiveIntensity=guardFlash>0?1.5:.7;}});
     const cameraDistance=innerWidth<600?8.8:8.0;
     targetCamera.set(game.hero.x*.42,5.3,game.hero.z-cameraDistance);if(initialPose)camera.position.copy(targetCamera);else camera.position.lerp(targetCamera,Math.min(1,visualDt*5));
@@ -263,12 +272,12 @@ function frame(now) {
 try {
   initializeScene();selectMode(mode);requestAnimationFrame(frame);
   const loader=new GLTFLoader();
-  const [hero,enemy]=await Promise.all([loader.loadAsync('./assets/hero.glb'),loader.loadAsync('./assets/enemy.glb')]);
+  const [hero,enemy]=await Promise.all([loader.loadAsync(heroAsset),loader.loadAsync('./assets/enemy.glb')]);
   heroTemplate=hero.scene;enemyTemplate=enemy.scene;heroModel=prepareModel(heroTemplate);scene.add(heroModel);
-  loaded=true;ui.start.disabled=false;ui.start.textContent=game.checkpoint.id?'CONTINUAR DO ABRIGO':'ENTRAR NA JORNADA';ui.overlayCopy.textContent=STORY.intro;ui.loadStatus.innerHTML='V6.1.1 · 9 duelos · 2 abrigos · 3 armas · <a href="./v4.html">V4</a>';ui.world.dataset.models='glb';toast('O caminho está pronto.',2);
-  loader.loadAsync('./assets/props-v6.glb').then(props=>{for(const [name,x,z]of [['CampBell',-5.8,35],['CampBeacon',2.3,74.5],['EclipseAltar',0,116]]){const original=props.scene.getObjectByName(name);if(original){const prop=original.clone(true);prop.position.set(x,0,z);prop.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});scene.add(prop);}}renderNeeded=true;}).catch(()=>{});
+  loaded=true;ui.start.disabled=false;ui.start.textContent=game.checkpoint.id?'CONTINUAR DO ABRIGO':'ENTRAR NA JORNADA';ui.overlayCopy.textContent=STORY.intro;ui.loadStatus.innerHTML='V6.2 · 9 duelos · 2 abrigos · 3 armas · <a href="./v4.html">V4</a>';ui.world.dataset.models='glb';ui.world.dataset.heroVariant=brasaProposal?'brasa':'current';ui.world.dataset.materials=brasaProposal?'toon-3-bands':'pbr';toast('O caminho está pronto.',2);
+  loader.loadAsync('./assets/props-v6.glb').then(props=>{for(const [name,x,z]of [['CampBell',-5.8,35],['CampBeacon',2.3,74.5],['EclipseAltar',0,116]]){const original=props.scene.getObjectByName(name);if(original){const prop=original.clone(true);prop.position.set(x,0,z);prop.traverse(n=>{if(n.isMesh){if(brasaProposal)n.material=illustratedMaterial(n.material);n.castShadow=true;n.receiveShadow=true;}});scene.add(prop);}}renderNeeded=true;}).catch(()=>{});
 } catch(error) {
   console.error('DIOSH: não foi possível carregar a cena 3D.',error);
-  ui.start.disabled=true;ui.start.textContent='3D INDISPONÍVEL';ui.overlayCopy.textContent='Não foi possível iniciar o 3D neste navegador. Atualize a página ou experimente outro navegador.';
-  ui.loadStatus.innerHTML='<a href="./v4.html">Jogar a versão 2.5D (V4)</a>';ui.toast.classList.remove('visible');
+  ui.start.disabled=true;ui.start.textContent='3D INDISPONÍVEL';ui.overlayCopy.textContent=brasaProposal?'Não foi possível carregar a proposta visual da Heroína da Brasa. Volte ao visual atual para continuar.':'Não foi possível iniciar o 3D neste navegador. Atualize a página ou experimente outro navegador.';
+  ui.loadStatus.innerHTML=brasaProposal?'<a href="?visual=classic">Voltar ao visual anterior</a> · <a href="./v4.html">Jogar a versão 2.5D (V4)</a>':'<a href="./v4.html">Jogar a versão 2.5D (V4)</a>';shopUI.open.disabled=true;ui.world.dataset.models='failed';ui.toast.classList.remove('visible');
 }

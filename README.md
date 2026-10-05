@@ -2,6 +2,8 @@
 
 Versão curta para testar no navegador do celular ou computador.
 
+V6.2: heroína com coque/trança, ombreiras assimétricas e capa curta; materiais ilustrados com sombras em três faixas. Compare no início/pausa pelo link “Comparar com visual anterior”. A troca recarrega o último abrigo e mantém compras/moedas.
+
 V6.1.1 coloca o sino ao lado do primeiro abrigo para deixar a visão do combate livre.
 
 V6.1: esquiva cancela golpes pendentes, defesa mantida aguarda a ação terminar e martelo preserva atordoamento do parry. Poses, impacto no chão e pausa foram refinados. Seu save V6 continua funcionando.
@@ -23,3 +25,4 @@ Conte ao Diogo o aparelho/navegador usado e o que aconteceu: os controles respon
 ## Dependências e assets
 
 Three.js0.186.1 é distribuído localmente, licença MIT em vendor/THREE-LICENSE.txt. Modelos da heroína/inimigo e marcos dos abrigos são originais produzidos para DIOSH no Blender, em GLB. Armas/variações usam geometria e animação procedural por articulação de peças; sem serviços externos de geração3D, publicidade ou analytics adicionados pelo jogo. GitHub Pages fornece a hospedagem.
+
