@@ -1,0 +1,5 @@
+import {WEAPONS} from './weapons.js?v=6';
+export const SAVE_KEY='DIOSH-v6';
+export function sanitizeSave(v){if(!v||typeof v!=='object'||Array.isArray(v)||v.version!==6)return null;const owned=['sword',...new Set(Array.isArray(v.owned)?v.owned.filter(id=>id!=='sword'&&Object.hasOwn(WEAPONS,id)):[])];return {version:6,checkpoint:Number.isInteger(v.checkpoint)&&v.checkpoint>=0&&v.checkpoint<=2?v.checkpoint:0,coins:Number.isFinite(v.coins)?Math.max(0,Math.min(10000,Math.floor(v.coins))):0,owned,equipped:owned.includes(v.equipped)?v.equipped:'sword',upgrades:[...new Set(Array.isArray(v.upgrades)?v.upgrades.filter(id=>owned.includes(id)):[])],rewarded:[...new Set(Array.isArray(v.rewarded)?v.rewarded.filter(id=>typeof id==='string'&&/^duel-[0-8]$/.test(id)):[])],camps:[...new Set(Array.isArray(v.camps)?v.camps.filter(id=>id===1||id===2):[])]};}
+export function parseSave(raw){try{return sanitizeSave(JSON.parse(raw));}catch{return null;}}
+export function snapshot(g){return {version:6,checkpoint:g.checkpoint.id,coins:g.coins,owned:[...g.owned],equipped:g.equipped,upgrades:[...g.upgrades],rewarded:[...g.rewarded],camps:[...g.camps]};}
