@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { createGame, step, attack, dodge, guard, setPaused, clearControls, upgrade, RULES } from './combat.js';
+import { readMovement } from './input.js';
 
 const $ = id => document.getElementById(id);
 const ui = Object.fromEntries(['world','hp','hpText','stamina','chapter','progress','distance','enemyHud','enemyName','enemyHp','enemyTell','toast','desktopHelp','auto','forge','coins','upgrade','forgeHelp','mobileControls','joystick','stick','defend','attack','dodge','overlay','overlayTitle','overlayCopy','modeChoice','instructions','modeHelp','start','restart','loadStatus','pause','sound','pc','mobile'].map(id => [id,$(id)]));
@@ -77,7 +78,8 @@ function pose(model, name, x=0,y=0,z=0) {
 function animateModel(model, actor, isHero, dt) {
   for(const joint of Object.values(model.userData.joints)) { joint.node.quaternion.copy(joint.quaternion); joint.node.position.copy(joint.position); }
   model.position.set(actor.x,0,actor.z);
-  const walking=isHero?Math.hypot(stickMove.x+(keys.has('d')?1:0)-(keys.has('a')?1:0),stickMove.z+(keys.has('w')||game.auto?1:0)-(keys.has('s')?1:0))>.1&&!game.paused:actor.phase==='approach';
+  const intent=isHero?movement():null;
+  const walking=isHero?Math.hypot(intent.x,intent.z+(game.auto?1:0))>.1&&!game.paused:actor.phase==='approach';
   const walk=walking?Math.sin(game.time*10)*.46:Math.sin(game.time*2)*.035;
   pose(model,'LeftLeg',walk); pose(model,'RightLeg',-walk); pose(model,'LeftArm',-walk*.45); pose(model,'RightArm',walk*.35);
   pose(model,'Cape',-.12+Math.sin(game.time*5)*.05,0,Math.sin(game.time*2)*.03);
@@ -166,7 +168,7 @@ function restart() {
   for(const c of coins)scene.remove(c.mesh);coins.length=0;
   game=createGame();resetInput();shake=0;guardFlash=0;killTime=0;begin();
 }
-function movement() {return {x:stickMove.x+(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),z:stickMove.z+(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)};}
+function movement() { return readMovement(keys, stickMove); }
 function toggleAuto() {if(game.paused||game.status!=='playing')return;game.auto=!game.auto;toast(game.auto?'AVANÇO LIVRE · recue ou toque na seta para parar':'Avanço livre desligado',2);}
 ui.pc.onclick=()=>selectMode('pc');ui.mobile.onclick=()=>selectMode('mobile');ui.start.onclick=begin;ui.restart.onclick=restart;
 ui.pause.onclick=()=>{if(loaded&&game.status==='playing'){if(game.paused)begin();else showOverlay();}};
@@ -216,7 +218,7 @@ function updateUI() {
   if(e){ui.enemyName.textContent=e.label;ui.enemyHp.style.width=`${Math.max(0,e.hp)/e.maxHp*100}%`;ui.enemyTell.textContent=e.phase==='windup'?(e.pattern==='pesado'?'GOLPE PESADO · prepare-se':e.pattern==='investida'?'INVESTIDA · saia da linha':'CORTE · prepare o escudo'):e.phase==='stunned'?'PARRY · ATAQUE AGORA':e.phase==='recover'?'ABERTURA · ataque':'Observe o movimento';}
   ui.forge.hidden=game.kills<1||!!e||game.status!=='playing';ui.coins.textContent=game.coins;ui.upgrade.disabled=game.upgraded||game.coins<25;
   ui.upgrade.textContent=game.upgraded?'LÂMINA TEMPERADA ✓':'TEMPERAR LÂMINA · 25';ui.forgeHelp.textContent=game.upgraded?'Dano 40 · aprimoramento único equipado.':'Entre duelos: +8 de dano, uma vez.';
-  ui.world.dataset.state=game.status;ui.world.dataset.round=game.round;ui.world.dataset.position=game.hero.z.toFixed(1);ui.world.dataset.models=loaded?'glb':'loading';
+  ui.world.dataset.state=game.status;ui.world.dataset.round=game.round;ui.world.dataset.position=game.hero.z.toFixed(1);ui.world.dataset.heroX=game.hero.x.toFixed(3);ui.world.dataset.models=loaded?'glb':'loading';
 }
 let previous=performance.now(),frameCount=0,frameTime=0,accumulator=0;
 function frame(now) {
