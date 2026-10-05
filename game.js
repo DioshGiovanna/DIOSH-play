@@ -158,7 +158,7 @@ function showOverlay(state='paused') {
   ui.start.hidden=state==='dead'||state==='won';ui.start.textContent=state==='intro'?'ENTRAR NA JORNADA':'CONTINUAR';
   ui.overlayTitle.textContent=state==='dead'?'LEVANTE-SE':state==='won'?'TRAVESSIA':state==='paused'?'RESPIRA':'DIOSH';
   ui.overlayCopy.textContent=state==='dead'?STORY.retry:state==='won'?STORY.ending:state==='paused'?'A jornada está pausada. Troque os controles ou continue no seu ritmo.':STORY.intro;
-  ui.loadStatus.textContent=state==='won'?`${game.kills} / 9 duelos · ${game.coins} moedas`:`V6.1 · ${game.checkpoint.name} · compras salvas neste navegador`;
+  ui.loadStatus.textContent=state==='won'?`${game.kills} / 9 duelos · ${game.coins} moedas`:`V6.1.1 · ${game.checkpoint.name} · compras salvas neste navegador`;
   shopUI.resume.hidden=state!=='dead';shopUI.pauseShop.hidden=state!=='paused'||!canShop(game);
 }
 function begin() {
@@ -265,8 +265,8 @@ try {
   const loader=new GLTFLoader();
   const [hero,enemy]=await Promise.all([loader.loadAsync('./assets/hero.glb'),loader.loadAsync('./assets/enemy.glb')]);
   heroTemplate=hero.scene;enemyTemplate=enemy.scene;heroModel=prepareModel(heroTemplate);scene.add(heroModel);
-  loaded=true;ui.start.disabled=false;ui.start.textContent=game.checkpoint.id?'CONTINUAR DO ABRIGO':'ENTRAR NA JORNADA';ui.overlayCopy.textContent=STORY.intro;ui.loadStatus.innerHTML='V6.1 · 9 duelos · 2 abrigos · 3 armas · <a href="./v4.html">V4</a>';ui.world.dataset.models='glb';toast('O caminho está pronto.',2);
-  loader.loadAsync('./assets/props-v6.glb').then(props=>{for(const [name,x,z]of [['CampBell',0,38.4],['CampBeacon',2.3,74.5],['EclipseAltar',0,116]]){const original=props.scene.getObjectByName(name);if(original){const prop=original.clone(true);prop.position.set(x,0,z);prop.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});scene.add(prop);}}renderNeeded=true;}).catch(()=>{});
+  loaded=true;ui.start.disabled=false;ui.start.textContent=game.checkpoint.id?'CONTINUAR DO ABRIGO':'ENTRAR NA JORNADA';ui.overlayCopy.textContent=STORY.intro;ui.loadStatus.innerHTML='V6.1.1 · 9 duelos · 2 abrigos · 3 armas · <a href="./v4.html">V4</a>';ui.world.dataset.models='glb';toast('O caminho está pronto.',2);
+  loader.loadAsync('./assets/props-v6.glb').then(props=>{for(const [name,x,z]of [['CampBell',-5.8,35],['CampBeacon',2.3,74.5],['EclipseAltar',0,116]]){const original=props.scene.getObjectByName(name);if(original){const prop=original.clone(true);prop.position.set(x,0,z);prop.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});scene.add(prop);}}renderNeeded=true;}).catch(()=>{});
 } catch(error) {
   console.error('DIOSH: não foi possível carregar a cena 3D.',error);
   ui.start.disabled=true;ui.start.textContent='3D INDISPONÍVEL';ui.overlayCopy.textContent='Não foi possível iniciar o 3D neste navegador. Atualize a página ou experimente outro navegador.';

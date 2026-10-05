@@ -2,6 +2,8 @@
 
 Versão curta para testar no navegador do celular ou computador.
 
+V6.1.1 coloca o sino ao lado do primeiro abrigo para deixar a visão do combate livre.
+
 V6.1: esquiva cancela golpes pendentes, defesa mantida aguarda a ação terminar e martelo preserva atordoamento do parry. Poses, impacto no chão e pausa foram refinados. Seu save V6 continua funcionando.
 
 - Escolha CELULAR para analógico e botões, ou COMPUTADOR para WASD e mouse.
