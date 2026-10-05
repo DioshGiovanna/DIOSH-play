@@ -261,7 +261,7 @@ function updateUI() {
   ui.auto.setAttribute('aria-pressed',game.auto);ui.auto.textContent=game.auto?'↑ AVANÇO: LIGADO':'↑ AVANÇO LIVRE';
   const e=game.enemy;ui.enemyHud.hidden=!e;
   if(e){ui.enemyName.textContent=e.label;ui.enemyHp.style.width=`${Math.max(0,e.hp)/e.maxHp*100}%`;ui.enemyTell.textContent=e.phase==='windup'?(e.pattern==='pesado'?'GOLPE PESADO · prepare-se':e.pattern==='investida'?'INVESTIDA · saia da linha':'CORTE · prepare o escudo'):e.phase==='stunned'?'PARRY · ATAQUE AGORA':e.phase==='recover'?'ABERTURA · ataque':'Observe o movimento';}
-  const w=weaponFor(game);shopUI.weapon.textContent=`${w.name.toUpperCase()} · ${w.damage} DANO`;shopUI.open.textContent=`LOJA · ✦ ${game.coins}`;shopUI.hint.textContent=canShop(game)?'Abrigo seguro · comprar / equipar / melhorar':e?'Loja disponível nos abrigos':`Próximo abrigo: ${game.checkpoint.id<1?'35':game.checkpoint.id<2?'71':'volte à chama'} m`;
+  const w=weaponFor(game);shopUI.weapon.textContent=`${w.name.toUpperCase()} · ${w.damage} DANO`;shopUI.open.textContent=`LOJA · ✦ ${game.coins}`;shopUI.hint.textContent=canShop(game)?'Abrigo seguro · comprar / equipar / melhorar':e?'Loja disponível nos abrigos':`Próximo abrigo: ${game.checkpoint.id<1?'35 m':game.checkpoint.id<2?'71 m':'volte à chama'}`;
   ui.world.dataset.state=game.status;ui.world.dataset.round=game.round;ui.world.dataset.position=game.hero.z.toFixed(1);ui.world.dataset.heroX=game.hero.x.toFixed(3);ui.world.dataset.models=loaded?'glb':'loading';
 }
 let previous=performance.now(),frameCount=0,frameTime=0,accumulator=0;
