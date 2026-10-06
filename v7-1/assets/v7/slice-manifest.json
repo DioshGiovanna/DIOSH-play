@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "encounterId": "duel-2",
+  "baseRuntime": "8983ae8eaa01661aae690defe1b55316209ca3e5",
+  "mode": "brasa",
+  "classicUsesOriginalAssets": true,
+  "enemy": {
+    "path": "assets/v7/portador-sino.glb",
+    "root": "Enemy",
+    "assetScale": [1, 1, 1],
+    "runtimeBellScale": [1.28, 0.92, 1.15],
+    "runtimeAttachments": ["hammer", "bell-crown"],
+    "applyStyleEnemyOnce": true,
+    "preserveEncounterPosition": true
+  },
+  "plaza": {
+    "path": "assets/v7/praca-sino.glb",
+    "root": "PracaSino",
+    "position": [0, 0, 30],
+    "rotationRadians": [0, 0, 0],
+    "scale": [1, 1, 1],
+    "visibleHeroZ": [24, 38],
+    "collision": false,
+    "minimumGeometryAbsX": 4.7,
+    "groundHeightChanges": false,
+    "materials": {
+      "Praca ivory": "#D8CFB8",
+      "Praca shade": "#8D9CA5",
+      "Praca cobalt": "#315B91",
+      "Praca iron": "#354553"
+    }
+  },
+  "enemyPalette": {
+    "Sino armor": "#303C48",
+    "Sino cloth": "#3E5260",
+    "Sino shadow": "#171E28",
+    "Sino worn brass": "#9D845B",
+    "Sino blade": "#A7BFCD",
+    "Sino eyes": "#CA793B"
+  },
+  "rendering": {
+    "useExistingIllustratedMaterial": true,
+    "newTextures": 0,
+    "newLights": 0,
+    "lightingRecommendation": "Reuse existing first-act light, exposure, fog and shadow settings. Check ivory clipping and hood separation in the integrated toon view before any optional slice-only adjustment.",
+    "pixelRatioMax": 1.5,
+    "shadowMapSize": [1024, 1024],
+    "integratedDrawCallDeltaGate": 20,
+    "integratedFrameP95RegressionGatePercent": 10
+  },
+  "limits": {
+    "enemy": {"triangles": 3000, "bytes": 300000, "materials": 6},
+    "plaza": {"triangles": 5000, "bytes": 500000, "materials": 4}
+  },
+  "integrationNotes": [
+    "Selection must be by encounter id duel-2, not variant bell; preserve all other enemies.",
+    "Clone and prepare the matching enemy template before styleEnemy; preserve old GLBs.",
+    "The plaza is an additive decoration kit. Do not remove global scenery or change collision/arena limits.",
+    "Hide the kit outside its interval, on classic comparison and after entering another act.",
+    "No procedural hammer or crown is embedded in the exported enemy; Sword/Shield remain compatible with existing weapon mounting.",
+    "Keep the original enemy as load failure fallback and report asset failure without blocking play."
+  ]
+}
